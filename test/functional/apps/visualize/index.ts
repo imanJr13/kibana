@@ -32,7 +32,7 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
     });
 
     // TODO: Remove when vislib is removed
-    describe('new charts library', function () {
+    describe.only('new charts library', function () {
       this.tags('ciGroup7');
 
       before(async () => {
