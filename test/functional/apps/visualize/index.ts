@@ -6,6 +6,7 @@
  * Side Public License, v 1.
  */
 
+import { inspect } from 'util';
 import { FtrProviderContext } from '../../ftr_provider_context.d';
 import { UI_SETTINGS } from '../../../../src/plugins/data/common';
 
@@ -15,7 +16,22 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
   const esArchiver = getService('esArchiver');
   const kibanaServer = getService('kibanaServer');
   const deployment = getService('deployment');
+  const savedObjectInfo = getService('savedObjectInfo');
+
   let isOss = true;
+
+  const logTypes = (msg: string = '') => async () =>
+    log.debug(
+      `\n### Saved Object Types In Index: [.kibana] ${msg}: \n${inspect(
+        await savedObjectInfo.types(),
+        {
+          compact: false,
+          depth: 99,
+          breakLength: 80,
+          sorted: true,
+        }
+      )}`
+    );
 
   describe('visualize app', () => {
     before(async () => {
@@ -23,7 +39,13 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
       await browser.setWindowSize(1280, 800);
       await esArchiver.loadIfNeeded('logstash_functional');
       await esArchiver.loadIfNeeded('long_window_logstash');
-      await esArchiver.load('visualize');
+
+      // await esArchiver.load('visualize');
+      // await kibanaServer.importExport.save('visualize', { types: ['index-pattern', 'visualization'] });
+      logTypes('### BEFORE LOAD - visualize')();
+      await kibanaServer.importExport.load('visualize');
+      logTypes('### AFTER LOAD - visualize')();
+
       await kibanaServer.uiSettings.replace({
         defaultIndex: 'logstash-*',
         [UI_SETTINGS.FORMAT_BYTES_DEFAULT_PATTERN]: '0,0.[000]b',
