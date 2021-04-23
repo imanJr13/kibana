@@ -6,6 +6,7 @@
  * Side Public License, v 1.
  */
 
+import { inspect } from 'util';
 import { FtrProviderContext } from '../../ftr_provider_context.d';
 import { UI_SETTINGS } from '../../../../src/plugins/data/common';
 
@@ -15,6 +16,20 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
   const esArchiver = getService('esArchiver');
   const kibanaServer = getService('kibanaServer');
   const deployment = getService('deployment');
+  const savedObjectInfo = getService('savedObjectInfo');
+
+  const logTypes = (msg: string = '') => async () =>
+    log.debug(
+      `\n### Saved Object Types In Index: [.kibana] ${msg}: \n${inspect(
+        await savedObjectInfo.types(),
+        {
+          compact: false,
+          depth: 99,
+          breakLength: 80,
+          sorted: true,
+        }
+      )}`
+    );
 
   let isOss = true;
 
@@ -24,6 +39,12 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
       await browser.setWindowSize(1280, 800);
       await esArchiver.load('empty_kibana');
 
+      // @ts-ignore
+      await kibanaServer.importExport.load(
+        'discover',
+        { space: undefined },
+        logTypes('[Visualize Test]')
+      );
       await kibanaServer.importExport.load('visualize');
 
       await esArchiver.loadIfNeeded('logstash_functional');
