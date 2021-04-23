@@ -39,10 +39,10 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
       await browser.setWindowSize(1280, 800);
       await esArchiver.load('empty_kibana');
 
-      // @ts-ignore
       await kibanaServer.importExport.load(
         'discover',
         { space: undefined },
+        // @ts-ignore
         logTypes('[Visualize Test]')
       );
 
