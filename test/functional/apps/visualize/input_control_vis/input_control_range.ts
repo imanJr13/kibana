@@ -8,6 +8,7 @@
 
 import expect from '@kbn/expect';
 
+import { inspect } from 'util';
 import { FtrProviderContext } from '../../../ftr_provider_context';
 
 export default function ({ getService, getPageObjects }: FtrProviderContext) {
@@ -15,6 +16,9 @@ export default function ({ getService, getPageObjects }: FtrProviderContext) {
   const kibanaServer = getService('kibanaServer');
   const find = getService('find');
   const security = getService('security');
+  const savedObjectInfo = getService('savedObjectInfo');
+  const log = getService('log');
+
   const { visualize, visEditor } = getPageObjects(['visualize', 'visEditor']);
 
   describe('input control range', () => {
@@ -50,9 +54,28 @@ export default function ({ getService, getPageObjects }: FtrProviderContext) {
     after(async () => {
       await esArchiver.unload('kibana_sample_data_flights_index_pattern');
       // loading back default data
+      await esArchiver.load('empty_kibana');
+
+      const logTypes = (msg: string = '') => async () =>
+        log.debug(
+          `\n### Saved Object Types In Index: [.kibana] ${msg}: \n${inspect(
+            await savedObjectInfo.types(),
+            {
+              compact: false,
+              depth: 99,
+              breakLength: 80,
+              sorted: true,
+            }
+          )}`
+        );
+
+      await kibanaServer.importExport.load(
+        'discover',
+        { space: undefined },
+        logTypes('[Visualize Test - Input Control Range]')
+      );
       await esArchiver.loadIfNeeded('logstash_functional');
       await esArchiver.loadIfNeeded('long_window_logstash');
-      await kibanaServer.importExport.load('visualize');
       await security.testUser.restoreDefaults();
     });
   });

@@ -45,7 +45,6 @@ export default function ({ getService, loadTestFile }: FtrProviderContext) {
         { space: undefined },
         logTypes('[Visualize Test]')
       );
-      await kibanaServer.importExport.load('visualize');
 
       await esArchiver.loadIfNeeded('logstash_functional');
       await esArchiver.loadIfNeeded('long_window_logstash');
