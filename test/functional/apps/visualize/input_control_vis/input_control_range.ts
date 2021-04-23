@@ -72,6 +72,7 @@ export default function ({ getService, getPageObjects }: FtrProviderContext) {
       await kibanaServer.importExport.load(
         'discover',
         { space: undefined },
+        // @ts-ignore
         logTypes('[Visualize Test - Input Control Range]')
       );
       await esArchiver.loadIfNeeded('logstash_functional');
